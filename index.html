@@ -106,6 +106,21 @@
   #login h2{margin:0 0 4px;font-size:18px;color:#0b4f45} #login input{width:100%;margin:6px 0;padding:7px 9px}
   #login .err{color:var(--up);font-size:12px;min-height:16px}
   @media (max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}}
+  .glue-inline,.unit-inline,.code-inline{display:none}
+  .code-inline{font-size:11px;color:#1f4f8f}
+  /* แท็บเล็ต / จอแคบ: ซ่อนคอลัมน์รอง ให้เห็นราคาโดยไม่ต้องเลื่อนขวา */
+  @media (max-width:1550px){
+    .c-glue,.c-roll,.c-count,.c-prev{display:none} .glue-inline{display:inline}
+    td.name{max-width:300px}
+  }
+  @media (max-width:950px){
+    .c-unit,.c-prev,.c-date,.c-code{display:none} .unit-inline{display:inline;font-size:11px} .code-inline{display:inline}
+    .chip{white-space:normal}
+    td.name{max-width:240px;font-size:12px}
+    header .btn{padding:3px 7px}
+    .panel{padding:16px} .grid2{grid-template-columns:1fr}
+  }
+  @media (pointer:coarse){ tbody td{padding-top:6px;padding-bottom:6px} .btn{padding:6px 12px} }
 </style>
 </head>
 <body>
@@ -781,7 +796,7 @@ function render(){
       <span class="stat imp">รายงานซื้อล่าสุด <b>${lastImport?esc(lastImport.period||th(lastImport.at.slice(0,10))):'—'}</b></span>
     </div>
     <div class="tablewrap"><table>
-      <thead><tr>${th_('code','รหัสสินค้า')}${th_('name','ชื่อสินค้า')}${ui.tab===MAIN_GROUP||ui.tab==='review'?th_('paper','ประเภทกระดาษ')+th_('glue','กาว'):''}${th_('sup','ผู้จำหน่าย')}${th_('price','ราคาล่าสุด','num')}<th>หน่วย</th>${th_('roll','ต่อม้วน','num')}${th_('lastDate','ซื้อล่าสุด')}${th_('prev','ราคาก่อนเปลี่ยน','num')}${th_('change','เปลี่ยน','num')}${th_('count','ครั้ง','num')}</tr></thead>
+      <thead><tr>${th_('code','รหัสสินค้า','c-code')}${th_('name','ชื่อสินค้า')}${ui.tab===MAIN_GROUP||ui.tab==='review'?th_('paper','ประเภทกระดาษ')+th_('glue','กาว','c-glue'):''}${th_('sup','ผู้จำหน่าย')}${th_('price','ราคาล่าสุด','num')}<th class="c-unit">หน่วย</th>${th_('roll','ต่อม้วน','num c-roll')}${th_('lastDate','ซื้อล่าสุด','c-date')}${th_('prev','ราคาก่อนเปลี่ยน','num c-prev')}${th_('change','เปลี่ยน','num')}${th_('count','ครั้ง','num c-count')}</tr></thead>
       <tbody>${list.map(it=>rowHTML(it,stats[it.code])).join('') || `<tr><td colspan="12" class="empty">ไม่พบรายการ${ui.boughtOnly?' (ลองเอาเครื่องหมายถูก "แสดงเฉพาะที่มีราคาซื้อ" ออก)':''}</td></tr>`}</tbody>
     </table></div>`;
   const qi=document.getElementById('q');
@@ -792,17 +807,17 @@ function changePill(c){ if(c==null) return ''; if(Math.abs(c)<0.005) return '<sp
 function rowHTML(it,s){
   const showPaper = ui.tab===MAIN_GROUP||ui.tab==='review';
   return `<tr onclick="openItem('${esc(it.code).replace(/'/g,"\\'")}')">
-    <td class="code">${esc(it.code)}</td>
-    <td class="name">${esc(it.name)}${it.needsReview?` <span class="pill warn">${esc(it.reviewReason)}</span>`:''}${it.note?`<div class="muted" style="font-size:13px">${esc(it.note)}</div>`:''}</td>
-    ${showPaper?`<td>${chip(it.paperType)}</td><td>${chip(it.glue)}</td>`:''}
+    <td class="code c-code">${esc(it.code)}</td>
+    <td class="name"><span class="code-inline">${esc(it.code)}<br></span>${esc(it.name)}${it.needsReview?` <span class="pill warn">${esc(it.reviewReason)}</span>`:''}${it.note?`<div class="muted" style="font-size:13px">${esc(it.note)}</div>`:''}</td>
+    ${showPaper?`<td>${chip(it.paperType)}<span class="glue-inline"><br>${chip(it.glue)}</span></td><td class="c-glue">${chip(it.glue)}</td>`:''}
     <td class="sup" style="color:${supColor(itemSup(it,s))}">${esc(itemSup(it,s))}</td>
-    <td class="num price">${(s.mismatch||s.unitBad)?`<span title="${s.unitBad?'มีราคาที่แปลงหน่วยไม่ได้ '+s.unitBad+' บรรทัด':''} ${s.mismatch?'ราคาในรายงานไม่ตรงกับ Excel/หน้าบิล':''}" style="color:var(--up)">⚠ </span>`:''}<b>${s.last?fmtPrice(s.last.cp):'<span class="muted">—</span>'}</b></td>
-    <td class="muted unit">${esc(priceUnit(it))}</td>
-    <td class="num muted">${rollM2(it)&&s.last?fmt(s.last.cp*rollM2(it)):''}</td>
-    <td class="num">${s.last?th(s.last.date):''}</td>
-    <td class="num muted">${s.prev?fmtPrice(s.prev.cp)+` <span style="font-size:12px">(${th(s.prev.date)})</span>`:''}</td>
+    <td class="num price">${(s.mismatch||s.unitBad)?`<span title="${s.unitBad?'มีราคาที่แปลงหน่วยไม่ได้ '+s.unitBad+' บรรทัด':''} ${s.mismatch?'ราคาในรายงานไม่ตรงกับ Excel/หน้าบิล':''}" style="color:var(--up)">⚠ </span>`:''}<b>${s.last?fmtPrice(s.last.cp):'<span class="muted">—</span>'}</b><span class="unit-inline muted"><br>${esc(priceUnit(it))}</span></td>
+    <td class="muted unit c-unit">${esc(priceUnit(it))}</td>
+    <td class="num muted c-roll">${rollM2(it)&&s.last?fmt(s.last.cp*rollM2(it)):''}</td>
+    <td class="num c-date">${s.last?th(s.last.date):''}</td>
+    <td class="num muted c-prev">${s.prev?fmtPrice(s.prev.cp)+` <span style="font-size:12px">(${th(s.prev.date)})</span>`:''}</td>
     <td class="num">${changePill(s.change)}</td>
-    <td class="num muted">${s.count||''}</td></tr>`;
+    <td class="num muted c-count">${s.count||''}</td></tr>`;
 }
 function setTab(t){ ui.tab=t; ui.paper=''; ui.glue=''; ui.sup=''; render(); }
 function sortBy(k){ if(ui.sort===k) ui.dir*=-1; else { ui.sort=k; ui.dir = ['code','name','paper','glue','sup'].includes(k)?1:-1; } render(); }
