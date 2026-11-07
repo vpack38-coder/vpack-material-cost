@@ -743,7 +743,7 @@ function render(){
       หลังจากนั้นใส่ <b>ราคาจากหน้าบิล</b> เองเมื่อราคาเปลี่ยน</div></div>`;
     return;
   }
-  const stats=computeStats();
+  const stats=computeStats(); const TF=tabFields();
   let list=items.filter(it=>tabOf(it)===ui.tab);
   const inTab=list;
   const papers=[...new Set(inTab.map(i=>i.paperType).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));
@@ -781,14 +781,14 @@ function render(){
     ${ui.tab==='review'?`<div class="warnbox">รายการในแท็บนี้มีรหัสที่ไม่ตรงกับทะเบียนวัตถุดิบ กดเข้าไปแก้รหัสให้ตรงกับ Autoflight (ถ้ารหัสใหม่มีอยู่แล้ว ระบบจะรวมประวัติราคาให้) หรือเลือกกลุ่มให้ แล้วกด "บันทึก"<div style="margin-top:8px">ถ้าเป็นรหัสเก่าที่เลิกใช้แล้วทั้งหมด กด <button class="btn small" onclick="moveAllReview()">ย้ายทั้งหมดไปกลุ่มกระดาษและสติกเกอร์</button></div></div>`:''}
     <div class="filters">
       <input type="search" id="q" placeholder="ค้นหา รหัส / ชื่อ / ประเภท / ผู้จำหน่าย / หมายเหตุ" value="${esc(ui.q)}">
-      ${papers.length?`<select onchange="ui.paper=this.value;render()"><option value="">ประเภทกระดาษ: ทั้งหมด</option>${papers.map(p=>`<option ${ui.paper===p?'selected':''}>${esc(p)}</option>`).join('')}</select>`:''}
-      ${glues.length?`<select onchange="ui.glue=this.value;render()"><option value="">กาว: ทั้งหมด</option>${glues.map(p=>`<option ${ui.glue===p?'selected':''}>${esc(p)}</option>`).join('')}</select>`:''}
+      ${papers.length?`<select onchange="ui.paper=this.value;render()"><option value="">${TF.labels[0]}: ทั้งหมด</option>${papers.map(p=>`<option ${ui.paper===p?'selected':''}>${esc(p)}</option>`).join('')}</select>`:''}
+      ${glues.length?`<select onchange="ui.glue=this.value;render()"><option value="">${TF.labels[1]}: ทั้งหมด</option>${glues.map(p=>`<option ${ui.glue===p?'selected':''}>${esc(p)}</option>`).join('')}</select>`:''}
       <select onchange="ui.sup=this.value;render()"><option value="">ผู้จำหน่าย: ทั้งหมด</option>${sups.map(p=>`<option ${ui.sup===p?'selected':''}>${esc(p)}</option>`).join('')}</select>
       <select onchange="ui.change=this.value;render()">
         <option value="">ราคา: ทั้งหมด</option><option value="up" ${ui.change==='up'?'selected':''}>เฉพาะที่ขึ้นราคา</option>
         <option value="down" ${ui.change==='down'?'selected':''}>เฉพาะที่ลดราคา</option>
         <option value="check" ${ui.change==='check'?'selected':''}>⚠ ต้องเช็ก (หน่วย / ราคาไม่ตรง / เปลี่ยนเกิน 50%)</option></select>
-      ${(ui.tab===MAIN_GROUP||ui.tab==='review')?`<button class="btn" style="background:#f3e5f5;border-color:#d8b4e2;color:#6a1b9a" onclick="openSuggest()">🪄 เติมประเภทจากชื่อ</button>`:''}
+      ${true?`<button class="btn" style="background:#f3e5f5;border-color:#d8b4e2;color:#6a1b9a" onclick="openSuggest()">🪄 เติมประเภทจากชื่อ</button>`:''}
       ${ui.tab!=='review'?`<label class="chk"><input type="checkbox" ${ui.boughtOnly?'checked':''} onchange="ui.boughtOnly=this.checked;render()"> เฉพาะที่มีราคาซื้อ</label>`:''}
       <span class="stat">แสดง <b>${fmt(list.length,0)}</b></span>
       <span class="stat up" title="ซื้อใน 6 เดือนล่าสุด">▲ ขึ้นราคา <b>${up}</b></span>
@@ -796,7 +796,7 @@ function render(){
       <span class="stat imp">รายงานซื้อล่าสุด <b>${lastImport?esc(lastImport.period||th(lastImport.at.slice(0,10))):'—'}</b></span>
     </div>
     <div class="tablewrap"><table>
-      <thead><tr>${th_('code','รหัสสินค้า','c-code')}${th_('name','ชื่อสินค้า')}${ui.tab===MAIN_GROUP||ui.tab==='review'?th_('paper','ประเภทกระดาษ')+th_('glue','กาว','c-glue'):''}${th_('sup','ผู้จำหน่าย')}${th_('price','ราคาล่าสุด','num')}<th class="c-unit">หน่วย</th>${th_('roll','ต่อม้วน','num c-roll')}${th_('lastDate','ซื้อล่าสุด','c-date')}${th_('prev','ราคาก่อนเปลี่ยน','num c-prev')}${th_('change','เปลี่ยน','num')}${th_('count','ครั้ง','num c-count')}</tr></thead>
+      <thead><tr>${th_('code','รหัสสินค้า','c-code')}${th_('name','ชื่อสินค้า')}${th_('paper',TF.labels[0])+th_('glue',TF.labels[1],'c-glue')}${th_('sup','ผู้จำหน่าย')}${th_('price','ราคาล่าสุด','num')}<th class="c-unit">หน่วย</th>${th_('roll','ต่อม้วน','num c-roll')}${th_('lastDate','ซื้อล่าสุด','c-date')}${th_('prev','ราคาก่อนเปลี่ยน','num c-prev')}${th_('change','เปลี่ยน','num')}${th_('count','ครั้ง','num c-count')}</tr></thead>
       <tbody>${list.map(it=>rowHTML(it,stats[it.code])).join('') || `<tr><td colspan="12" class="empty">ไม่พบรายการ${ui.boughtOnly?' (ลองเอาเครื่องหมายถูก "แสดงเฉพาะที่มีราคาซื้อ" ออก)':''}</td></tr>`}</tbody>
     </table></div>`;
   const qi=document.getElementById('q');
@@ -805,7 +805,7 @@ function render(){
 function supName(p){ return shortSup(p.supplierName) || p.supplierCode || ''; }
 function changePill(c){ if(c==null) return ''; if(Math.abs(c)<0.005) return '<span class="muted">0%</span>'; return `<span class="pill ${c>0?'up':'down'}">${c>0?'▲':'▼'} ${fmt(Math.abs(c),1)}%</span>`; }
 function rowHTML(it,s){
-  const showPaper = ui.tab===MAIN_GROUP||ui.tab==='review';
+  const showPaper = true;
   return `<tr onclick="openItem('${esc(it.code).replace(/'/g,"\\'")}')">
     <td class="code c-code">${esc(it.code)}</td>
     <td class="name"><span class="code-inline">${esc(it.code)}<br></span>${esc(it.name)}${it.needsReview?` <span class="pill warn">${esc(it.reviewReason)}</span>`:''}${it.note?`<div class="muted" style="font-size:13px">${esc(it.note)}</div>`:''}</td>
@@ -832,8 +832,9 @@ function openItem(code){
   const stats=statsOf(it, list);
   const area=rollM2(it), pu=priceUnit(it);
   const allItems=Object.values(db.items);
-  const papers=[...new Set(allItems.map(i=>i.paperType).filter(Boolean))].sort();
-  const glues=[...new Set(allItems.map(i=>i.glue).filter(Boolean))].sort();
+  const FD=fieldsFor(it.groupCode), grpItems=allItems.filter(i=>i.groupCode===it.groupCode);
+  const papers=[...new Set(grpItems.map(i=>i.paperType).filter(Boolean))].sort();
+  const glues=[...new Set(grpItems.map(i=>i.glue).filter(Boolean))].sort();
   const groups={...KNOWN_GROUPS}; allItems.forEach(i=>{ if(i.groupCode) groups[i.groupCode]=i.groupName; });
   document.getElementById('panel').innerHTML=`
     <div class="row"><h2 style="flex:1">${esc(it.name||it.code)}</h2><button class="btn" onclick="closePanel()">ปิด ✕</button></div>
@@ -853,8 +854,8 @@ function openItem(code){
       <label>กลุ่ม<select id="f_group">${Object.entries(groups).map(([k,v])=>`<option value="${k}" ${it.groupCode===k?'selected':''}>${esc(k+' '+v)}</option>`).join('')}<option value="" ${!it.groupCode?'selected':''}>ยังไม่จัดกลุ่ม</option></select></label>
       <label class="full">ชื่อสินค้า<input type="text" id="f_name" value="${esc(it.name)}"></label>
       <label class="full">ผู้จำหน่าย<input type="text" id="f_sup" list="dl_sup" value="${esc(it.supplier||'')}" placeholder="${stats.last?esc(supName(stats.last)):''}"></label>
-      <label>ประเภทกระดาษ<input type="text" id="f_paper" list="dl_paper" value="${esc(it.paperType)}" placeholder="${(()=>{const x=buildSuggester()(it);return x.paper?'แนะนำ: '+esc(x.paper):''})()}"></label>
-      <label>ประเภทกาว<input type="text" id="f_glue" list="dl_glue" value="${esc(it.glue)}" placeholder="${(()=>{const x=buildSuggester()(it);return x.glue?'แนะนำ: '+esc(x.glue):''})()}"></label>
+      <label>${FD.labels[0]}<input type="text" id="f_paper" list="dl_paper" value="${esc(it.paperType)}" placeholder="${(()=>{const x=buildSuggester()(it);return x.paper?'แนะนำ: '+esc(x.paper):''})()}"></label>
+      <label>${FD.labels[1]}<input type="text" id="f_glue" list="dl_glue" value="${esc(it.glue)}" placeholder="${(()=>{const x=buildSuggester()(it);return x.glue?'แนะนำ: '+esc(x.glue):''})()}"></label>
       <label>หน่วยนับหลัก<input type="text" id="f_unit" value="${esc(it.unit)}"></label>
       <label>ขนาดม้วน (ใช้แปลงราคาต่อม้วน → ต่อ ตร.ม.)<div class="row"><input type="number" step="any" id="f_rw" value="${it.rollW??''}" placeholder="หน้ากว้าง" style="width:110px"> มม. ×
         <input type="number" step="any" id="f_rl" value="${it.rollL??''}" placeholder="ความยาว" style="width:110px"> ม.
@@ -979,28 +980,77 @@ const GLUE_RULES=[
   [/DIGITAL\s*PRINTING\s*ADHESIVE|กาวดิจิตอล/, ['กาวดิจิตอล']],
   [/ACRYLIC|อะคริลิก|อคริลิก/, ['กาวอะคริลิก']],
 ];
+// ---- กลุ่มอื่น: ชื่อช่อง + กฎเดาจากชื่อ (ใช้ช่องข้อมูลเดียวกับ ประเภทกระดาษ/กาว) ----
+const COLOR_RULES=[
+  [/FLUO|FLUORESCENT|สะท้อนแสง/, ['สะท้อนแสง']],
+  [/PROCESS\s*CYAN|\bCYAN|ฟ้า/, ['Cyan / ฟ้า']], [/MAGENTA|บานเย็น/, ['Magenta / บานเย็น']],
+  [/YELLOW|เหลือง/, ['Yellow / เหลือง']], [/BLACK|ดำ/, ['Black / ดำ']], [/WHITE|ขาว/, ['White / ขาว']],
+  [/RHODAMINE|PINK|ROSE|ชมพู/, ['ชมพู']], [/ORANGE|ส้ม/, ['ส้ม']], [/\bRED\b|แดง/, ['แดง']],
+  [/GREEN|เขียว/, ['เขียว']], [/BLUE|น้ำเงิน/, ['น้ำเงิน']], [/VIOLET|PURPLE|ม่วง/, ['ม่วง']],
+  [/GOLD|ทอง/, ['ทอง']], [/SILVER|เงิน/, ['เงิน']], [/HOLOGRAM|โฮโล/, ['โฮโลแกรม']],
+  [/MEDIUM|EXTENDER|CLEAR|ใส/, ['Medium / ใส']],
+];
+const INK_RULES=[
+  [/RELEASE|ฆ่ากาว/, ['น้ำยาฆ่ากาว']],
+  [/WASH|CLEAN|ล้าง/, ['น้ำยาล้าง']],
+  [/REDUCER|THINNER|ผสม|ทินเนอร์/, ['น้ำมันผสม / ทินเนอร์']],
+  [/ยางปาด|SQUEEGEE/, ['ยางปาด']],
+  [/OPV|VARNISH|วานิช|เคลือบเงา|STARGLOSS|REMOVABLE\s*OPV/, ['วานิช / OPV']],
+  [/สกรีน|SCREEN|UVPO/, ['หมึกสกรีน UV']],
+  [/\bUV/, ['หมึก UV']],
+  [/WATER|สูตรน้ำ/, ['หมึกสูตรน้ำ']],
+  [/SOLVENT/, ['หมึกโซลเว้นท์']],
+  [/หมึก|INK/, ['หมึก']],
+];
+const OTHER_RULES=[
+  [/FOIL|ฟอยล์|MGN|STAMP|\(\d{3}\)\s*PLUS|\bOS-\d|\bOK-T/, ['ฟอยล์']], [/RIBBON|ริบบอน/, ['ริบบอน']], [/CORE|แกน|หลอด/, ['แกนม้วน']],
+  [/PLATE|เพลท|BLOCK|บล็อก|โพลิเมอร์|POLYMER/, ['บล็อก / เพลท']], [/TAPE|เทป/, ['เทป']], [/FILM|ฟิล์ม|พลาสติกเคลือบ|OPAT|\bOPP\b/, ['ฟิล์ม']],
+];
+const PACK_RULES=[
+  [/กล่อง|BOX|CARTON/, ['กล่อง']], [/ถุง|BAG/, ['ถุง']], [/STRETCH|ฟิล์มยืด|ฟิล์มห่อ/, ['ฟิล์มยืด']],
+  [/เทป|TAPE/, ['เทป']], [/แกน|CORE/, ['แกนกระดาษ']], [/บับเบิ้ล|BUBBLE|กันกระแทก/, ['กันกระแทก']], [/กระดาษ|PAPER/, ['กระดาษห่อ']],
+];
+const POLY_RULES=[
+  [/MOUNT|เมาท์|TESA/, ['เทปติดเพลท']], [/(2|สอง)\s*หน้า|DOUBLE/, ['เทปกาว 2 หน้า']], [/POLYMER|โพลิเมอร์|โพลีเมอร์|PLATE|เพลท/, ['โพลีเมอร์']], [/TAPE|เทป/, ['เทป']], [/FOAM|โฟม/, ['โฟม']],
+];
+const GROUP_FIELDS={
+  '00004':{labels:['ประเภทกระดาษ','ประเภทกาว'], r1:PAPER_RULES, r2:GLUE_RULES, paperMode:true},
+  '00005':{labels:['ประเภทหมึก/น้ำยา','สี'], r1:INK_RULES, r2:COLOR_RULES},
+  '00021':{labels:['ชนิด','สี / รายละเอียด'], r1:OTHER_RULES, r2:COLOR_RULES},
+  '00018':{labels:['ชนิด','รายละเอียด'], r1:PACK_RULES, r2:[]},
+  '00012':{labels:['ชนิด','รายละเอียด'], r1:POLY_RULES, r2:[]},
+};
+const DEFAULT_FIELDS={labels:['ชนิด','รายละเอียด'], r1:[...OTHER_RULES,...PACK_RULES], r2:COLOR_RULES};
+const fieldsFor = g => GROUP_FIELDS[g] || DEFAULT_FIELDS;
+const tabFields = () => ui.tab==='review' ? GROUP_FIELDS['00004'] : fieldsFor(ui.tab);
+
 // ชื่อ/รหัสแบบตัดขนาดออก ใช้หา "พี่น้อง" ที่ระบุประเภทไว้แล้ว เช่น ADC-FGSL-ALMH-120 กับ -155
 const baseName = n => String(n||'').toUpperCase().replace(/\(.*?\)/g,' ').replace(/\d+(\.\d+)?\s*(MM|CM|M|LM|G|GSM|MIC|U|UM|ไมครอน|แกรม)?\.?/g,' ').replace(/[^A-Zก-๙]+/g,' ').trim();
 const baseCode = c => String(c||'').toUpperCase().replace(/[-_ ]?\d+(\.\d+)?(X\d+)?$/,'');
 function pickLabel(cands, freq){ let best=cands[0], n=-1; for(const c of cands){ if((freq[c]||0)>n){ n=freq[c]||0; best=c; } } return best; }
 function buildSuggester(){
   const items=Object.values(db.items);
-  const pf={}, gf={}, byCode={}, byName={};
+  const F={}, byName={};   // ความถี่ของแต่ละชื่อประเภท แยกตามกลุ่ม
+  const fq=(g)=>(F[g] ||= {p:{},g:{}});
   for(const it of items){
-    if(it.paperType) pf[it.paperType]=(pf[it.paperType]||0)+1;
-    if(it.glue) gf[it.glue]=(gf[it.glue]||0)+1;
-    if(it.paperType||it.glue){ const bn=baseName(it.name); if(bn.length>6) (byName[bn] ||= []).push(it); }
+    const f=fq(it.groupCode);
+    if(it.paperType) f.p[it.paperType]=(f.p[it.paperType]||0)+1;
+    if(it.glue) f.g[it.glue]=(f.g[it.glue]||0)+1;
+    if(it.paperType||it.glue){ const bn=it.groupCode+'|'+baseName(it.name); if(bn.length>12) (byName[bn] ||= []).push(it); }
   }
   return function(it){
     const out={paper:'',glue:'',paperSrc:'',glueSrc:''};
+    const FD=fieldsFor(it.groupCode), pf=fq(it.groupCode).p, gf=fq(it.groupCode).g;
+    const PAPER_RULES=FD.r1, GLUE_RULES=FD.r2;
     // ประเภทกระดาษ: ดูจากรายการชื่อเดียวกัน (ต่างแค่ขนาด) ก่อน แล้วค่อยดูคำในชื่อ
     // ประเภทกาว: ดูคำในชื่อก่อน (กาวมักเขียนไว้ในชื่อ) แล้วค่อยดูรายการชื่อเดียวกัน
-    const sib=(byName[baseName(it.name)]||[]).filter(x=>x!==it);
+    const sib=(byName[it.groupCode+'|'+baseName(it.name)]||[]).filter(x=>x!==it);
     const nm=String(it.name||'').toUpperCase()+' '+String(it.code||'').toUpperCase();
-    for(const x of sib) if(!out.paper && x.paperType){ out.paper=x.paperType; out.paperSrc='เหมือน '+x.code; }
+    if(FD.paperMode) for(const x of sib) if(!out.paper && x.paperType){ out.paper=x.paperType; out.paperSrc='เหมือน '+x.code; }
     if(!out.paper) for(const [re,c] of PAPER_RULES) if(re.test(nm)){ out.paper=pickLabel(c,pf); out.paperSrc='จากคำในชื่อ'; break; }
     for(const [re,c] of GLUE_RULES) if(re.test(nm)){ const sg=sib.find(x=>c.includes(x.glue)); out.glue=sg?sg.glue:pickLabel(c,gf); out.glueSrc='จากคำในชื่อ'; break; }
     if(!out.glue) for(const x of sib) if(x.glue){ out.glue=x.glue; out.glueSrc='เหมือน '+x.code; break; }
+    if(!out.paper) for(const x of sib) if(x.paperType){ out.paper=x.paperType; out.paperSrc='เหมือน '+x.code; break; }
     return out;
   };
 }
@@ -1011,13 +1061,14 @@ function openSuggest(){
   const list=Object.values(db.items).filter(it=>tabOf(it)===ui.tab && (!it.paperType || !it.glue) && (!onlyBought || st[it.code].last))
     .sort((a,b)=>(st[b.code].last?.date||'').localeCompare(st[a.code].last?.date||''));
   sugRows=list.map(it=>({it, s:sug(it)}));
-  const allP=[...new Set(Object.values(db.items).map(i=>i.paperType).filter(Boolean))].sort();
-  const allG=[...new Set(Object.values(db.items).map(i=>i.glue).filter(Boolean))].sort();
+  const TF=tabFields(), sameG=Object.values(db.items).filter(i=>tabOf(i)===ui.tab || (ui.tab==='review' && i.groupCode===MAIN_GROUP));
+  const allP=[...new Set(sameG.map(i=>i.paperType).filter(Boolean))].sort();
+  const allG=[...new Set(sameG.map(i=>i.glue).filter(Boolean))].sort();
   const nSug=sugRows.filter(r=>(!r.it.paperType&&r.s.paper)||(!r.it.glue&&r.s.glue)).length;
-  let h=`<h3>เติมประเภทกระดาษ / กาว จากชื่อสินค้า</h3>
+  let h=`<h3>เติม${TF.labels[0]} / ${TF.labels[1]} จากชื่อสินค้า</h3>
   <div class="row" style="margin-bottom:8px"><span class="muted">รายการที่ยังไม่มีประเภท ${list.length} รายการ · ระบบเดาให้ได้ ${nSug} รายการ — ตรวจ/แก้ในช่องได้เลย แล้วกดบันทึก (ช่องว่าง = ยังไม่ระบุ)</span><div class="spacer"></div>
   <label class="chk"><input type="checkbox" id="sg_bought" ${onlyBought?'checked':''} onchange="openSuggest()"> เฉพาะที่มีราคาซื้อ</label></div>
-  <div class="tablewrap" style="max-height:62vh"><table class="sug"><thead><tr><th style="width:30px"><input type="checkbox" checked onchange="document.querySelectorAll('.sgc').forEach(c=>c.checked=this.checked)"></th><th>รหัสสินค้า</th><th>ชื่อสินค้า</th><th style="width:240px">ประเภทกระดาษ</th><th style="width:300px">ประเภทกาว</th></tr></thead><tbody>
+  <div class="tablewrap" style="max-height:62vh"><table class="sug"><thead><tr><th style="width:30px"><input type="checkbox" checked onchange="document.querySelectorAll('.sgc').forEach(c=>c.checked=this.checked)"></th><th>รหัสสินค้า</th><th>ชื่อสินค้า</th><th style="width:240px">${TF.labels[0]}</th><th style="width:300px">${TF.labels[1]}</th></tr></thead><tbody>
   ${sugRows.map((r,i)=>`<tr><td><input type="checkbox" class="sgc" data-i="${i}" checked></td><td class="code">${esc(r.it.code)}</td><td>${esc(r.it.name)}</td>
     <td><input type="text" list="sg_dlp" id="sgp${i}" value="${esc(r.it.paperType||r.s.paper)}"><div class="src">${r.it.paperType?'มีอยู่แล้ว':esc(r.s.paperSrc)}</div></td>
     <td><input type="text" list="sg_dlg" id="sgg${i}" value="${esc(r.it.glue||r.s.glue)}"><div class="src">${r.it.glue?'มีอยู่แล้ว':esc(r.s.glueSrc)}</div></td></tr>`).join('') || '<tr><td colspan="5" class="empty">ทุกรายการมีประเภทครบแล้ว</td></tr>'}
@@ -1070,7 +1121,7 @@ async function restore(f){
 }
 function exportCSV(){
   const stats=computeStats();
-  const rows=[['กลุ่ม','รหัสสินค้า','ชื่อสินค้า','ประเภทกระดาษ','ประเภทกาว','ผู้จำหน่าย','ราคาล่าสุด','หน่วย','ราคาต่อม้วน','ขนาดม้วน (มม. x ม.)','วันที่ซื้อล่าสุด','ราคาก่อนเปลี่ยน','วันที่ราคาก่อนเปลี่ยน','เปลี่ยนแปลง %','หมายเหตุ']];
+  const rows=[['กลุ่ม','รหัสสินค้า','ชื่อสินค้า',tabFields().labels[0],tabFields().labels[1],'ผู้จำหน่าย','ราคาล่าสุด','หน่วย','ราคาต่อม้วน','ขนาดม้วน (มม. x ม.)','วันที่ซื้อล่าสุด','ราคาก่อนเปลี่ยน','วันที่ราคาก่อนเปลี่ยน','เปลี่ยนแปลง %','หมายเหตุ']];
   Object.values(db.items).filter(it=>tabOf(it)===ui.tab).sort((a,b)=>a.code.localeCompare(b.code)).forEach(it=>{
     const s=stats[it.code];
     rows.push([it.groupName,it.code,it.name,it.paperType,it.glue,itemSup(it,s),s.last?fmtPrice(s.last.cp):'',priceUnit(it),(rollM2(it)&&s.last)?(s.last.cp*rollM2(it)).toFixed(2):'',it.rollW?`${it.rollW} x ${it.rollL}`:'',s.last?th(s.last.date):'',s.prev?fmtPrice(s.prev.cp):'',s.prev?th(s.prev.date):'',s.change!=null?s.change.toFixed(2):'',it.note]);
